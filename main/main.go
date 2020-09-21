@@ -6,13 +6,19 @@ import (
 )
 
 func run1() {
-	im := ipmsg.NewIpMsg("Test", "172.18.60.209", ipmsg.IPMSG_DEFAT_PORT)
+	im, err := ipmsg.NewIpMsg("Test", "172.17.0.225", ipmsg.IPMSG_DEFAT_PORT)
+	if err != nil {
+		panic(err)
+	}
 	im.EntryBroadCast()
 	im.BindHandler(IpMsgCore.PackageHandler)
 	im.Run()
 }
 func run2() {
-	im := ipmsg.NewIpMsg("Test", "172.18.60.209", ipmsg.IPMSG_DEFAT_PORT)
+	im, err := ipmsg.NewIpMsg("Test", "172.17.0.225", ipmsg.IPMSG_DEFAT_PORT)
+	if err != nil {
+		panic(err)
+	}
 	im.EntryBroadCast()
 	im.BindCommandMap(IpMsgCore.NewCmdMap())
 	im.Run()

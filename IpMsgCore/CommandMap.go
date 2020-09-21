@@ -4,8 +4,8 @@ import (
 	"ipmsg"
 )
 
-func NewCmdMap() (cmdMap map[ipmsg.CommandType]func(*ipmsg.IpMsg, *ipmsg.Package)) {
-	cmdMap = make(map[ipmsg.CommandType]func(*ipmsg.IpMsg, *ipmsg.Package))
+func NewCmdMap() (cmdMap map[ipmsg.CmdType]func(*ipmsg.IpMsg, *ipmsg.Package)) {
+	cmdMap = make(map[ipmsg.CmdType]func(*ipmsg.IpMsg, *ipmsg.Package))
 	cmdMap[ipmsg.IPMSG_BR_ENTRY] = onIpMsgBrEntry
 	cmdMap[ipmsg.IPMSG_BR_EXIT] = onIpMsgBrExit
 	cmdMap[ipmsg.IPMSG_ANSENTRY] = onIpMsgAnsEntry

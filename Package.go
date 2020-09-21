@@ -11,12 +11,12 @@ import (
 type Package struct {
 	//"1:100:shirouzu:jupiter:32:Hello"
 	Buf               []byte
-	Ver               string      //版本
-	PacketNo          uint32      //包编号
-	SenderName        string      //发送者名字
-	SenderHost        string      //发送者主机
-	CommandNo         CommandType //命令编号
-	AdditionalSection []byte      //附加信息区域
+	Ver               string  //版本
+	PacketNo          uint32  //包编号
+	SenderName        string  //发送者名字
+	SenderHost        string  //发送者主机
+	CommandNo         CmdType //命令编号
+	AdditionalSection []byte  //附加信息区域
 
 	SenderAddr *net.UDPAddr //发送者地址
 }
@@ -45,15 +45,14 @@ func (pkg *Package) Format(state fmt.State, verb rune) {
 		val := reflect.ValueOf(*pkg)
 		for i := 0; i < typ.NumField(); i++ {
 			name := typ.Field(i).Name
+			if name == "Buf" {
+				continue
+			}
 			if state.Flag('#') || state.Flag('+') {
 				_, _ = fmt.Fprintf(state, "%s:", name)
 			}
 			fld := val.FieldByName(name)
-			if name == "Buf" && fld.Len() > 0 {
-				_, _ = fmt.Fprintf(state, "len(%d)", fld.Len())
-			} else {
-				_, _ = fmt.Fprint(state, fld)
-			}
+			_, _ = fmt.Fprint(state, fld)
 			if i < typ.NumField()-1 {
 				_, _ = fmt.Fprint(state, " ")
 			}
@@ -84,7 +83,7 @@ func (pkg *Package) UnMarshal(data []byte) (*Package, error) {
 	if err != nil {
 		return nil, err
 	}
-	pkg.CommandNo = CommandType(cmdNo)
+	pkg.CommandNo = CmdType(cmdNo)
 	pkg.AdditionalSection = s[5]
 	return pkg, nil
 }

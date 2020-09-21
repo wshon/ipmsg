@@ -9,26 +9,30 @@ import (
 type IpMsg struct {
 	*Base
 	handler func(*IpMsg)
-	cmdMap  map[CommandType]func(*IpMsg, *Package)
+	cmdMap  map[CmdType]func(*IpMsg, *Package)
 }
 
-func NewIpMsg(user string, host string, port int) (im *IpMsg) {
-	im = &IpMsg{
-		Base:   NewIpMsgBase(user, host, port),
-		cmdMap: make(map[CommandType]func(*IpMsg, *Package)),
+func NewIpMsg(user string, host string, port int) (im *IpMsg, err error) {
+	ipMsgBase, err := NewIpMsgBase(user, host, port)
+	if err != nil {
+		return nil, err
 	}
-	return im
+	im = &IpMsg{
+		Base:   ipMsgBase,
+		cmdMap: make(map[CmdType]func(*IpMsg, *Package)),
+	}
+	return im, nil
 }
 
 func (im *IpMsg) BindHandler(handler func(*IpMsg)) {
 	im.handler = handler
 }
 
-func (im *IpMsg) BindCommandMap(cmdMap map[CommandType]func(*IpMsg, *Package)) {
+func (im *IpMsg) BindCommandMap(cmdMap map[CmdType]func(*IpMsg, *Package)) {
 	im.cmdMap = cmdMap
 }
 
-func (im *IpMsg) BindCommand(cmdNo CommandType, cmd func(*IpMsg, *Package)) {
+func (im *IpMsg) BindCommand(cmdNo CmdType, cmd func(*IpMsg, *Package)) {
 	im.cmdMap[cmdNo] = cmd
 }
 
@@ -54,32 +58,27 @@ func (im *IpMsg) defaultHandler() {
 
 //上线广播
 func (im *IpMsg) EntryBroadCast() {
-	logger.Debug("send entry broadcast to [%s]", im.broadCastAddr)
 	pkg := im.newPackage(IPMSG_BR_ENTRY, []byte(im.SenderName))
 	_ = im.sendPackage(im.broadCastAddr, pkg)
 }
 
 //下线广播
 func (im *IpMsg) ExitBroadCast() {
-	logger.Debug("send exit broadcast to [%s]", im.broadCastAddr)
 	pkg := im.newPackage(IPMSG_BR_EXIT, []byte(im.SenderName))
 	_ = im.sendPackage(im.broadCastAddr, pkg)
 }
 
 func (im *IpMsg) SendEntryAnswer(addr *net.UDPAddr) {
-	logger.Debug("send entry answer to [%s]", addr)
 	pkg := im.newPackage(IPMSG_ANSENTRY, []byte(im.SenderName))
 	_ = im.sendPackage(addr, pkg)
 }
 
 func (im *IpMsg) SendMessageReceived(addr *net.UDPAddr, packetNo uint32) {
-	logger.Debug("send message received to [%s]", addr)
 	pkg := im.newPackage(IPMSG_RECVMSG, []byte(strconv.Itoa(int(packetNo))))
 	_ = im.sendPackage(addr, pkg)
 }
 
 func (im *IpMsg) SendMessageRead(addr *net.UDPAddr, packetNo uint32) {
-	logger.Debug("send message read to [%s]", addr)
 	pkg := im.newPackage(IPMSG_ANSREADMSG, []byte(strconv.Itoa(int(packetNo))))
 	_ = im.sendPackage(addr, pkg)
 }
