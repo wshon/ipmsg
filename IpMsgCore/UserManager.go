@@ -7,12 +7,25 @@ import (
 )
 
 //根据用户名返回IP地址
-func get_addr_by_name(name string) *net.UDPAddr {
+func getAddrByName(name string) *net.UDPAddr {
 	return nil
 }
-func add_user(user *ipmsg.UserInfo) {
+
+func addUser(pkg *ipmsg.Package) (user *ipmsg.UserInfo) {
+	user = &ipmsg.UserInfo{
+		Name: pkg.SenderName,
+		Host: pkg.SenderHost,
+		Addr: pkg.SenderAddr,
+	}
 	logger.Debug("add user [%s]", user)
+	return user
 }
-func del_user(user *ipmsg.UserInfo) {
+
+func delUser(pkg *ipmsg.Package) {
+	user := &ipmsg.UserInfo{
+		Name: pkg.SenderName,
+		Host: pkg.SenderHost,
+		Addr: pkg.SenderAddr,
+	}
 	logger.Debug("del user [%s]", user)
 }

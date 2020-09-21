@@ -3,6 +3,9 @@ package ipmsg
 import (
 	"ipmsg/logger"
 	"net"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type Base struct {
@@ -40,8 +43,10 @@ func (im *Base) Run() {
 	_ = im.packageHandler(im)
 }
 
-func (im *Base) newPackage(CommandNo uint32, AdditionalSection []byte) *Package {
+func (im *Base) newPackage(CommandNo CommandType, AdditionalSection []byte) *Package {
 	return &Package{
+		Ver:               strconv.Itoa(IPMSG_VERSION),
+		PacketNo:          uint32(time.Now().Unix()),
 		SenderName:        im.SenderName,
 		SenderHost:        im.SenderHost,
 		CommandNo:         CommandNo,
@@ -50,18 +55,19 @@ func (im *Base) newPackage(CommandNo uint32, AdditionalSection []byte) *Package 
 }
 
 func (im *Base) sendPackage(addr *net.UDPAddr, pkg *Package) error {
-	_, err := im.udp.WriteToUDP(pkg.Marshal(), addr)
+	pkg.Buf = pkg.Marshal()
+	logger.Trace("send new package %+v", pkg)
+	logger.Trace("package ext_data {%s}", strings.Replace(string(pkg.AdditionalSection), "\n", "\\n", -1))
+	_, err := im.udp.WriteToUDP(pkg.Buf, addr)
 	return err
 }
 
-func (im *Base) ReadPackage() (*UserInfo, *Package, error) {
+func (im *Base) ReadPackage() (*Package, error) {
 	buf := make([]byte, 512)
 	n, addr, _ := im.udp.ReadFromUDP(buf)
 	pkg, _ := UnMarshal(buf[:n])
-	user := &UserInfo{
-		Name: pkg.SenderName,
-		Host: pkg.SenderHost,
-		Addr: addr,
-	}
-	return user, pkg, nil
+	pkg.SenderAddr = addr
+	logger.Trace("recv new package %+v", pkg)
+	logger.Trace("package ext_data {%s}", strings.Replace(string(pkg.AdditionalSection), "\n", "\\n", -1))
+	return pkg, nil
 }

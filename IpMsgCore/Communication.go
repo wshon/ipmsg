@@ -3,8 +3,6 @@ package IpMsgCore
 import (
 	"errors"
 	"fmt"
-	"golang.org/x/text/encoding"
-	"golang.org/x/text/transform"
 	"ipmsg"
 	"ipmsg/logger"
 	"net"
@@ -15,58 +13,25 @@ import (
 var selfName string
 var selfHost string
 
-//发送消息
-func MsgSend(msg string, addr *net.UDPAddr) {
-	//_, _ = udpConn.WriteToUDP([]byte(msg), addr)
-}
-
 //接收消息线程，接收其他客户端发送的UDP数据
-func PackageHandler(im *ipmsg.IpMsg) error {
+func PackageHandler(im *ipmsg.IpMsg) {
 	for {
-		user, pkg, _ := im.ReadPackage()
-		logger.Trace(string(pkg.Buf))
-		switch ipmsg.GET_MODE(pkg.CommandNo) {
+		pkg, _ := im.ReadPackage()
+		switch pkg.CommandNo.GetCmd() {
 		case ipmsg.IPMSG_BR_ENTRY:
-			logger.Debug("recv entry broadcast from [%s]", user.Addr)
-			add_user(user)
-			//im.SendEntryAnswer(user)
+			onIpMsgBrEntry(im, pkg)
 		case ipmsg.IPMSG_BR_EXIT:
-			logger.Debug("recv exit broadcast from [%s]", user.Addr)
-			del_user(user)
+			onIpMsgBrExit(im, pkg)
 		case ipmsg.IPMSG_ANSENTRY:
-			logger.Debug("recv entry answer from [%s]", user.Addr)
-			add_user(user)
+			onIpMsgAnsEntry(im, pkg)
 		case ipmsg.IPMSG_SENDMSG:
-			if pkg.AdditionalSection[0] != 0 {
-				logger.Info("recv message from [%s]#\n%X\n", user.Name, pkg.AdditionalSection)
-			}
-			if (pkg.CommandNo & ipmsg.IPMSG_SENDCHECKOPT) == ipmsg.IPMSG_SENDCHECKOPT {
-				im.SendMessageReceived(user, int(pkg.PacketNo))
-			}
-			if (pkg.CommandNo & ipmsg.IPMSG_FILEATTACHOPT) == ipmsg.IPMSG_FILEATTACHOPT {
-				//char * p = ipMsg + strlen(ipMsg) + 1
-				////printf("filemsg=%s\n",p);
-				//char * fileopt = strtok(p, "\a") //fileopt指向第一个文件属性
-				//do{ //循环提取文件信息
-				//	IPMSG_FILE, ftemp
-				//	fmt.Sscanf(fileopt, "%d:%[^:]:%lx:%lx", &ftemp.PacketNo, ftemp.selfName, &ftemp.size, &ftemp.ltime)
-				//	strcpy(ftemp.user, user.selfName)
-				//	ftemp.pkgnum, = pkgnum
-				//	add_file(ftemp, RECVFILE)
-				//	fileopt = strtok(NULL, "\a") //fileopt指向下一个文件属性
-				//}
-				//while(fileopt != NULL)
-				//IPMSG_OUT_MSG_COLOR(
-				//	printf("<<<Recv file from %s!>>>\n", user.selfName),
-				//)
-			}
-			break
+			onIpMsgSendMsg(im, pkg)
 		case ipmsg.IPMSG_RECVMSG:
-			logger.Info("%s have received your ipMsg!\n", user.Name)
+			onIpMsgRecvMsg(im, pkg)
 		case ipmsg.IPMSG_NOOPERATION:
 			// 无操作忽略
 		default:
-			logger.Info("recv unknown from [%s]#\n%s\n%X", user.Name, pkg, pkg)
+			logger.Info("recv unknown from [%s]#\n%s\n%X", pkg.SenderName, pkg, pkg)
 		}
 	}
 }
@@ -74,13 +39,13 @@ func PackageHandler(im *ipmsg.IpMsg) error {
 //接收文件(参数为接收文件列表中的序号)
 func RecvFile(id int) error {
 	// 是否存在该文件
-	p := find_file(id)
+	p := findFile(id)
 	if p == nil {
 		return errors.New("no such file id")
 	}
-	s_addr := get_addr_by_name(p.UserName) //根据发送者姓名获取发送这地址
+	s_addr := getAddrByName(p.UserName) //根据发送者姓名获取发送这地址
 	if s_addr == nil {
-		del_file(p, ipmsg.RECVFILE)
+		delFile(p, ipmsg.RECVFILE)
 		return errors.New("recv file error: user is not online")
 	}
 	// 创建临时TCP client用来接收文件
@@ -120,7 +85,7 @@ func RecvFile(id int) error {
 		_, _ = file.Write(buf[:n])
 	}
 	//从文件列表中删除接收过的文件
-	del_file(p, ipmsg.RECVFILE)
+	delFile(p, ipmsg.RECVFILE)
 	return nil
 }
 
@@ -161,7 +126,7 @@ func sendfile_thread() {
 	//		if ((GET_MODE(CommandNo)&IPMSG_GETFILEDATA)!=IPMSG_GETFILEDATA)
 	//		break
 	//		//获取之前发送的文件信息
-	//		if ((p = getfileinfo(oldpkgnum, filenum))==NULL)
+	//		if ((p = getFileInfo(oldpkgnum, filenum))==NULL)
 	//	{
 	//		return NULL
 	//	}

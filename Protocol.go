@@ -3,11 +3,16 @@ package ipmsg
 /*  IP Messenger Communication Protocol version 3.0 define  */
 /*  macro  */
 
-// 获取command
-func GET_MODE(command uint32) uint32 { return command & 0x000000ff }
+type CommandType uint32
+type OptionType uint32
 
-// 获取选项option
-func GET_OPT(command uint32) uint32 { return command & 0xffffff00 }
+// GetCmd 获取command
+func (cmd CommandType) GetCmd() CommandType {
+	return cmd & 0x000000ff
+}
+func (cmd CommandType) CheckOpt(opt OptionType) bool {
+	return uint32(cmd)&uint32(opt) != 0
+}
 
 const (
 	/*  header  */
@@ -17,65 +22,65 @@ const (
 
 	/*  command  基本命令字(32位命令字的低8位) */
 
-	IPMSG_NOOPERATION = uint32(0x00000000) //No Operation 没有任何操作
+	IPMSG_NOOPERATION CommandType = 0x00000000 //No Operation 没有任何操作
 
-	IPMSG_BR_ENTRY   = uint32(0x00000001) //Entry to service (Start-up with a Broadcast command) 上线（开始于广播此命令）
-	IPMSG_BR_EXIT    = uint32(0x00000002) //Exit from service (End with a Broadcast command) 下线（结束于广播此命令）
-	IPMSG_ANSENTRY   = uint32(0x00000003) //Notify a new entry 通报新上线
-	IPMSG_BR_ABSENCE = uint32(0x00000004) //Change absence mode 更改为离开状态
+	IPMSG_BR_ENTRY   CommandType = 0x00000001 //Entry to service (Start-up with a Broadcast command) 上线（开始于广播此命令）
+	IPMSG_BR_EXIT    CommandType = 0x00000002 //Exit from service (End with a Broadcast command) 下线（结束于广播此命令）
+	IPMSG_ANSENTRY   CommandType = 0x00000003 //Notify a new entry 通报新上线
+	IPMSG_BR_ABSENCE CommandType = 0x00000004 //Change absence mode 更改为离开状态
 
-	IPMSG_BR_ISGETLIST  = uint32(0x00000010) //Search valid sending SenderHost members 搜寻有效的主机用户
-	IPMSG_OKGETLIST     = uint32(0x00000011) //Host list sending notice 主机列表发送通知
-	IPMSG_GETLIST       = uint32(0x00000012) //Host list sending request 主机列表发送请求
-	IPMSG_ANSLIST       = uint32(0x00000013) //Host list sending 主机列表发送
-	IPMSG_BR_ISGETLIST2 = uint32(0x00000018)
+	IPMSG_BR_ISGETLIST  CommandType = 0x00000010 //Search valid sending SenderHost members 搜寻有效的主机用户
+	IPMSG_OKGETLIST     CommandType = 0x00000011 //Host list sending notice 主机列表发送通知
+	IPMSG_GETLIST       CommandType = 0x00000012 //Host list sending request 主机列表发送请求
+	IPMSG_ANSLIST       CommandType = 0x00000013 //Host list sending 主机列表发送
+	IPMSG_BR_ISGETLIST2 CommandType = 0x00000018
 
-	IPMSG_SENDMSG    = uint32(0x00000020) //Message transmission 消息传送
-	IPMSG_RECVMSG    = uint32(0x00000021) //Message receiving check 接收消息确认
-	IPMSG_READMSG    = uint32(0x00000030) //Message open notice 消息打开通知
-	IPMSG_DELMSG     = uint32(0x00000031) //Message discarded notice 消息丢弃通知
-	IPMSG_ANSREADMSG = uint32(0x00000032) //Message open confirmation notice(added from version-8) 消息打开确认通知（版本8中加入）
+	IPMSG_SENDMSG    CommandType = 0x00000020 //Message transmission 消息传送
+	IPMSG_RECVMSG    CommandType = 0x00000021 //Message receiving check 接收消息确认
+	IPMSG_READMSG    CommandType = 0x00000030 //Message open notice 消息打开通知
+	IPMSG_DELMSG     CommandType = 0x00000031 //Message discarded notice 消息丢弃通知
+	IPMSG_ANSREADMSG CommandType = 0x00000032 //Message open confirmation notice(added from version-8) 消息打开确认通知（版本8中加入）
 
-	IPMSG_GETINFO  = uint32(0x00000040) //Get IPMSG version info 获取IPMSG版本信息
-	IPMSG_SENDINFO = uint32(0x00000041) //Send IPMSG version info 发送IPMSG版本信息
+	IPMSG_GETINFO  CommandType = 0x00000040 //Get IPMSG version info 获取IPMSG版本信息
+	IPMSG_SENDINFO CommandType = 0x00000041 //Send IPMSG version info 发送IPMSG版本信息
 
-	IPMSG_GETABSENCEINFO  = uint32(0x00000050) //Get absence sentence 获取离线判定
-	IPMSG_SENDABSENCEINFO = uint32(0x00000051) //Send absence sentence 发送离线判定
+	IPMSG_GETABSENCEINFO  CommandType = 0x00000050 //Get absence sentence 获取离线判定
+	IPMSG_SENDABSENCEINFO CommandType = 0x00000051 //Send absence sentence 发送离线判定
 
-	IPMSG_GETFILEDATA  = uint32(0x00000060) //File Transfer request by TCP 基于TCP的文件传送请求
-	IPMSG_RELEASEFILES = uint32(0x00000061) //Discard attachment file 丢弃（取消）附件文件的接收
-	IPMSG_GETDIRFILES  = uint32(0x00000062) //Attachment hierarchical file request 文件夹传送请求
+	IPMSG_GETFILEDATA  CommandType = 0x00000060 //File Transfer request by TCP 基于TCP的文件传送请求
+	IPMSG_RELEASEFILES CommandType = 0x00000061 //Discard attachment file 丢弃（取消）附件文件的接收
+	IPMSG_GETDIRFILES  CommandType = 0x00000062 //Attachment hierarchical file request 文件夹传送请求
 
-	IPMSG_GETPUBKEY = uint32(0x00000072) //RSA Public Key Acquisition 公钥获取
-	IPMSG_ANSPUBKEY = uint32(0x00000073) //RSA Public Key Response 公钥响应
+	IPMSG_GETPUBKEY CommandType = 0x00000072 //RSA Public Key Acquisition 公钥获取
+	IPMSG_ANSPUBKEY CommandType = 0x00000073 //RSA Public Key Response 公钥响应
 
 	/*  option for all command  */
 
-	IPMSG_ABSENCEOPT    = uint32(0x00000100) //Absence mode(Member recognition command) 离开状态（用户识别命令）
-	IPMSG_SERVEROPT     = uint32(0x00000200) //Server(Reserved) 服务器（保留）
-	IPMSG_DIALUPOPT     = uint32(0x00010000) //Send individual member recognition command 发送个人用户识别命令
-	IPMSG_FILEATTACHOPT = uint32(0x00200000) //传送文件选项
-	IPMSG_ENCRYPTOPT    = uint32(0x00400000)
-	IPMSG_UTF8OPT       = uint32(0x00800000)
-	IPMSG_CAPUTF8OPT    = uint32(0x01000000)
-	IPMSG_ENCEXTMSGOPT  = uint32(0x04000000)
-	IPMSG_CLIPBOARDOPT  = uint32(0x08000000)
+	IPMSG_ABSENCEOPT    OptionType = 0x00000100 //Absence mode(Member recognition command) 离开状态（用户识别命令）
+	IPMSG_SERVEROPT     OptionType = 0x00000200 //Server(Reserved) 服务器（保留）
+	IPMSG_DIALUPOPT     OptionType = 0x00010000 //Send individual member recognition command 发送个人用户识别命令
+	IPMSG_FILEATTACHOPT OptionType = 0x00200000 //传送文件选项
+	IPMSG_ENCRYPTOPT    OptionType = 0x00400000
+	IPMSG_UTF8OPT       OptionType = 0x00800000
+	IPMSG_CAPUTF8OPT    OptionType = 0x01000000
+	IPMSG_ENCEXTMSGOPT  OptionType = 0x04000000
+	IPMSG_CLIPBOARDOPT  OptionType = 0x08000000
 
 	/*  option for send command  */
 
-	IPMSG_SENDCHECKOPT = uint32(0x00000100) //Transmission check 传送检查(需要对方返回确认信息)
-	IPMSG_SECRETOPT    = uint32(0x00000200) //Sealed message 封闭信息
-	IPMSG_BROADCASTOPT = uint32(0x00000400) //Broadcast message 广播信息
-	IPMSG_MTICASTOPT   = uint32(0x00000800) //Multi-cast(Multiple casts selection) 多播
-	IPMSG_NOPOPUPOPT   = uint32(0x00001000) //(No longer valid) （不可用）
-	IPMSG_AUTORETOPT   = uint32(0x00002000) //Automatic response(Ping-pong protection) 自动回复
-	IPMSG_RETRYOPT     = uint32(0x00004000) //Re-send flag(Use when acquiring HOSTLIST) 重发位（在获取HOSTLIST时使用）
-	IPMSG_PASSWORDOPT  = uint32(0x00008000) //Lock 锁
-	IPMSG_NOLOGOPT     = uint32(0x00020000) //No log files 无日志文件
-	IPMSG_NEWMUTIOPT   = uint32(0x00040000) //New version multi-cast(reserved) 新版本多播
-	IPMSG_NOADDLISTOPT = uint32(0x00080000) //Notice to the members outside of BR_ENTRY 不在线用户通知
-	IPMSG_READCHECKOPT = uint32(0x00100000) //Sealed message check(added from ver8 ) 封闭信息检查（版本8中加入）
-	IPMSG_SECRETEXOPT  = IPMSG_READCHECKOPT | IPMSG_SECRETOPT
+	IPMSG_SENDCHECKOPT OptionType = 0x00000100 //Transmission check 传送检查(需要对方返回确认信息)
+	IPMSG_SECRETOPT    OptionType = 0x00000200 //Sealed message 封闭信息
+	IPMSG_BROADCASTOPT OptionType = 0x00000400 //Broadcast message 广播信息
+	IPMSG_MTICASTOPT   OptionType = 0x00000800 //Multi-cast(Multiple casts selection) 多播
+	IPMSG_NOPOPUPOPT   OptionType = 0x00001000 //(No longer valid) （不可用）
+	IPMSG_AUTORETOPT   OptionType = 0x00002000 //Automatic response(Ping-pong protection) 自动回复
+	IPMSG_RETRYOPT     OptionType = 0x00004000 //Re-send flag(Use when acquiring HOSTLIST) 重发位（在获取HOSTLIST时使用）
+	IPMSG_PASSWORDOPT  OptionType = 0x00008000 //Lock 锁
+	IPMSG_NOLOGOPT     OptionType = 0x00020000 //No log files 无日志文件
+	IPMSG_NEWMUTIOPT   OptionType = 0x00040000 //New version multi-cast(reserved) 新版本多播
+	IPMSG_NOADDLISTOPT OptionType = 0x00080000 //Notice to the members outside of BR_ENTRY 不在线用户通知
+	IPMSG_READCHECKOPT OptionType = 0x00100000 //Sealed message check(added from ver8 ) 封闭信息检查（版本8中加入）
+	IPMSG_SECRETEXOPT  OptionType = IPMSG_READCHECKOPT | IPMSG_SECRETOPT
 
 	/*  obsolete option for send command  */
 
