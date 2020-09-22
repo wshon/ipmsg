@@ -29,6 +29,10 @@ func (cmd CmdType) GetCmd() CmdType {
 	return cmd & 0x000000ff
 }
 
+func (cmd CmdType) WithFlag(flag CmdFlag) CmdType {
+	return cmd | CmdType(flag)
+}
+
 //goland:noinspection GoReceiverNames
 func (opt CmdFlag) CheckOpt(cmd CmdType) bool {
 	return uint32(cmd)&uint32(opt) != 0

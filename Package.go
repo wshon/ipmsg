@@ -16,7 +16,7 @@ type Package struct {
 	SenderName        string  //发送者名字
 	SenderHost        string  //发送者主机
 	CommandNo         CmdType //命令编号
-	AdditionalSection []byte  //附加信息区域
+	AdditionalSection string  //附加信息区域
 
 	SenderAddr *net.UDPAddr //发送者地址
 }
@@ -52,7 +52,11 @@ func (pkg *Package) Format(state fmt.State, verb rune) {
 				_, _ = fmt.Fprintf(state, "%s:", name)
 			}
 			fld := val.FieldByName(name)
-			_, _ = fmt.Fprint(state, fld)
+			if name == "AdditionalSection" && fld.Len() > 0 {
+				_, _ = fmt.Fprintf(state, "%X", []byte(fld.String()))
+			} else {
+				_, _ = fmt.Fprint(state, fld)
+			}
 			if i < typ.NumField()-1 {
 				_, _ = fmt.Fprint(state, " ")
 			}
@@ -84,7 +88,7 @@ func (pkg *Package) UnMarshal(data []byte) (*Package, error) {
 		return nil, err
 	}
 	pkg.CommandNo = CmdType(cmdNo)
-	pkg.AdditionalSection = s[5]
+	pkg.AdditionalSection = string(s[5])
 	return pkg, nil
 }
 

@@ -6,9 +6,10 @@ import (
 )
 
 type UserInfo struct {
+	Addr *net.UDPAddr
 	Name string
 	Host string
-	Addr *net.UDPAddr
+	Info string
 }
 
 type FileInfo struct {

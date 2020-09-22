@@ -16,8 +16,9 @@ func addUser(pkg *ipmsg.Package) (user *ipmsg.UserInfo) {
 		Name: pkg.SenderName,
 		Host: pkg.SenderHost,
 		Addr: pkg.SenderAddr,
+		Info: pkg.AdditionalSection,
 	}
-	logger.Debug("add user [%s]", user)
+	logger.Debug("add user [%+v]", user)
 	return user
 }
 

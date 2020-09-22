@@ -20,7 +20,7 @@ func onIpMsgAnsEntry(im *ipmsg.IpMsg, pkg *ipmsg.Package) {
 }
 
 func onIpMsgSendMsg(im *ipmsg.IpMsg, pkg *ipmsg.Package) {
-	message, _ := simplifiedchinese.GBK.NewDecoder().Bytes(pkg.AdditionalSection)
+	message, _ := simplifiedchinese.GBK.NewDecoder().String(pkg.AdditionalSection)
 	logger.Info("new msg from [%s]# %s\n", pkg.SenderName, message)
 	if ipmsg.IPMSG_SENDCHECKOPT.CheckOpt(pkg.CommandNo) {
 		im.SendMessageReceived(pkg.SenderAddr, pkg.PacketNo)

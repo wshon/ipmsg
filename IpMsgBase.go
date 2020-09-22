@@ -16,6 +16,7 @@ type Base struct {
 	broadCastAddr  *net.UDPAddr
 	tcp            *net.TCPListener
 	udp            *net.UDPConn
+	decoder        func(s string) (string, error)
 }
 
 func NewIpMsgBase(user string, host string, port int) (im *Base, err error) {
@@ -41,6 +42,10 @@ func NewIpMsgBase(user string, host string, port int) (im *Base, err error) {
 	return im, nil
 }
 
+func (im *IpMsg) BindDecoder(decoder func(s string) (string, error)) {
+	im.decoder = decoder
+}
+
 func (im *Base) BindHandler(handler func(*Base) error) {
 	im.packageHandler = handler
 }
@@ -49,7 +54,7 @@ func (im *Base) Run() {
 	_ = im.packageHandler(im)
 }
 
-func (im *Base) newPackage(CommandNo CmdType, AdditionalSection []byte) *Package {
+func (im *Base) newPackage(CommandNo CmdType, AdditionalSection string) *Package {
 	return &Package{
 		Ver:               strconv.Itoa(IPMSG_VERSION),
 		PacketNo:          uint32(time.Now().Unix()),
@@ -61,11 +66,11 @@ func (im *Base) newPackage(CommandNo CmdType, AdditionalSection []byte) *Package
 }
 
 func (im *Base) sendPackage(addr *net.UDPAddr, pkg *Package) error {
+	logger.Trace("send pkg [%s] to [%s]", pkg.CommandNo.GetCmd(), addr)
 	pkg.Buf = pkg.Marshal()
 	logger.Debug("send new pkg %+v", pkg)
-	logger.Debug("send pkg ext_data {%s}", strings.Replace(string(pkg.AdditionalSection), "\n", "\\n", -1))
+	logger.Debug("send pkg ext_data {%s}", strings.Replace(pkg.AdditionalSection, "\n", "\\n", -1))
 	_, err := im.udp.WriteToUDP(pkg.Buf, addr)
-	logger.Trace("send pkg [%s] to [%s]", pkg.CommandNo.GetCmd(), addr)
 	return err
 }
 
@@ -76,6 +81,9 @@ func (im *Base) ReadPackage() (*Package, error) {
 	logger.Trace("recv pkg [%s] from [%s]", pkg.CommandNo.GetCmd(), addr)
 	pkg.SenderAddr = addr
 	logger.Debug("recv new pkg %+v", pkg)
-	logger.Debug("recv pkg ext_data {%s}", strings.Replace(string(pkg.AdditionalSection), "\n", "\\n", -1))
+	if im.decoder != nil {
+		pkg.AdditionalSection, _ = im.decoder(pkg.AdditionalSection)
+	}
+	logger.Debug("recv pkg ext_data {%s}", strings.Replace(pkg.AdditionalSection, "\n", "\\n", -1))
 	return pkg, nil
 }

@@ -48,37 +48,36 @@ func (im *IpMsg) defaultHandler() {
 	for {
 		pkg, _ := im.ReadPackage()
 		if cmd, ok := im.cmdMap[pkg.CommandNo.GetCmd()]; ok {
-			//存在
 			cmd(im, pkg)
 		} else {
-			logger.Warning("no handler for cmd [%08X]", pkg.CommandNo)
+			logger.Warning("no handler for cmd [%s]", pkg.CommandNo.GetCmd())
 		}
 	}
 }
 
 //上线广播
 func (im *IpMsg) EntryBroadCast() {
-	pkg := im.newPackage(IPMSG_BR_ENTRY, []byte(im.SenderName))
+	pkg := im.newPackage(IPMSG_BR_ENTRY, im.SenderName)
 	_ = im.sendPackage(im.broadCastAddr, pkg)
 }
 
 //下线广播
 func (im *IpMsg) ExitBroadCast() {
-	pkg := im.newPackage(IPMSG_BR_EXIT, []byte(im.SenderName))
+	pkg := im.newPackage(IPMSG_BR_EXIT, im.SenderName)
 	_ = im.sendPackage(im.broadCastAddr, pkg)
 }
 
 func (im *IpMsg) SendEntryAnswer(addr *net.UDPAddr) {
-	pkg := im.newPackage(IPMSG_ANSENTRY, []byte(im.SenderName))
+	pkg := im.newPackage(IPMSG_ANSENTRY, im.SenderName)
 	_ = im.sendPackage(addr, pkg)
 }
 
 func (im *IpMsg) SendMessageReceived(addr *net.UDPAddr, packetNo uint32) {
-	pkg := im.newPackage(IPMSG_RECVMSG, []byte(strconv.Itoa(int(packetNo))))
+	pkg := im.newPackage(IPMSG_RECVMSG, strconv.Itoa(int(packetNo)))
 	_ = im.sendPackage(addr, pkg)
 }
 
 func (im *IpMsg) SendMessageRead(addr *net.UDPAddr, packetNo uint32) {
-	pkg := im.newPackage(IPMSG_ANSREADMSG, []byte(strconv.Itoa(int(packetNo))))
+	pkg := im.newPackage(IPMSG_READMSG.WithFlag(IPMSG_READCHECKOPT), strconv.Itoa(int(packetNo)))
 	_ = im.sendPackage(addr, pkg)
 }
