@@ -92,6 +92,22 @@ func (pkg *Package) UnMarshal(data []byte) (*Package, error) {
 	return pkg, nil
 }
 
+func (pkg *Package) SetFlag(flag CmdFlag) {
+	pkg.CommandNo = pkg.CommandNo | CmdType(flag)
+}
+
+func (pkg *Package) ClearFlag(flag CmdFlag) {
+	pkg.CommandNo = pkg.CommandNo & CmdType(^flag)
+}
+
+func (pkg *Package) CheckFlag(flag interface{}) bool {
+	switch flag.(type) {
+	case CmdFlag:
+		return uint32(pkg.CommandNo)&uint32(flag.(CmdFlag)) != 0
+	}
+	return false
+}
+
 // UnMarshal
 func UnMarshal(data []byte) (*Package, error) {
 	return new(Package).UnMarshal(data)

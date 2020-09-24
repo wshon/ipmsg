@@ -29,15 +29,6 @@ func (cmd CmdType) GetCmd() CmdType {
 	return cmd & 0x000000ff
 }
 
-func (cmd CmdType) WithFlag(flag CmdFlag) CmdType {
-	return cmd | CmdType(flag)
-}
-
-//goland:noinspection GoReceiverNames
-func (opt CmdFlag) CheckOpt(cmd CmdType) bool {
-	return uint32(cmd)&uint32(opt) != 0
-}
-
 //goland:noinspection GoSnakeCaseUsage,GoNameStartsWithPackageName,GoUnusedConst,SpellCheckingInspection
 const (
 	/*  header  */
@@ -45,11 +36,11 @@ const (
 	IPMSG_VERSION    = 0x0001
 	IPMSG_DEFAT_PORT = 0x0979
 
-	/*  command  基本命令字(32位命令字的低8位) */
+	/*  cmd  基本命令字(32位命令字的低8位) */
 
 	IPMSG_NOOPERATION     CmdType = 0x00000000 //No Operation 没有任何操作
-	IPMSG_BR_ENTRY        CmdType = 0x00000001 //Entry to service (Start-up with a Broadcast command) 上线（开始于广播此命令）
-	IPMSG_BR_EXIT         CmdType = 0x00000002 //Exit from service (End with a Broadcast command) 下线（结束于广播此命令）
+	IPMSG_BR_ENTRY        CmdType = 0x00000001 //Entry to service (Start-up with a Broadcast cmd) 上线（开始于广播此命令）
+	IPMSG_BR_EXIT         CmdType = 0x00000002 //Exit from service (End with a Broadcast cmd) 下线（结束于广播此命令）
 	IPMSG_ANSENTRY        CmdType = 0x00000003 //Notify a new entry 通报新上线
 	IPMSG_BR_ABSENCE      CmdType = 0x00000004 //Change absence mode 更改为离开状态
 	IPMSG_BR_ISGETLIST    CmdType = 0x00000010 //Search valid sending SenderHost members 搜寻有效的主机用户
@@ -72,13 +63,13 @@ const (
 	IPMSG_GETPUBKEY       CmdType = 0x00000072 //RSA Public Key Acquisition 公钥获取
 	IPMSG_ANSPUBKEY       CmdType = 0x00000073 //RSA Public Key Response 公钥响应
 
-	/*  option for all command  */
+	/*  option for all cmd  */
 
-	IPMSG_ABSENCEOPT SvrFlag = 0x00000100 //Absence mode(Member recognition command) 离开状态（用户识别命令）
+	IPMSG_ABSENCEOPT SvrFlag = 0x00000100 //Absence mode(Member recognition cmd) 离开状态（用户识别命令）
 	IPMSG_SERVEROPT  SvrFlag = 0x00000200 //Server(Reserved) 服务器（保留）
-	IPMSG_DIALUPOPT  SvrFlag = 0x00010000 //Send individual member recognition command 发送个人用户识别命令
+	IPMSG_DIALUPOPT  SvrFlag = 0x00010000 //Send individual member recognition cmd 发送个人用户识别命令
 
-	/*  option for send command  */
+	/*  option for send cmd  */
 
 	IPMSG_SENDCHECKOPT  CmdFlag = 0x00000100 //Transmission check 传送检查(需要对方返回确认信息)
 	IPMSG_SECRETOPT     CmdFlag = 0x00000200 //Sealed message 封闭信息
@@ -100,7 +91,7 @@ const (
 	IPMSG_CLIPBOARDOPT  CmdFlag = 0x08000000 //全部使用UTF-8 （第10版）
 	IPMSG_SECRETEXOPT           = IPMSG_READCHECKOPT | IPMSG_SECRETOPT
 
-	/* encryption/capability flags for encrypt command */
+	/* encryption/capability flags for encrypt cmd */
 
 	IPMSG_RSA_512       EncFlag = 0x00000001
 	IPMSG_RSA_1024      EncFlag = 0x00000002
@@ -131,7 +122,7 @@ const (
 	IPMSG_RC2_128ALL                = IPMSG_RC2_128 | IPMSG_RC2_128OLD
 	IPMSG_BLOWFISH_128ALL           = IPMSG_BLOWFISH_128 | IPMSG_BLOWFISH_128OLD
 
-	/* file types for fileattach command */
+	/* file types for fileattach cmd */
 
 	IPMSG_FILE_REGULAR   FileType = 0x00000001
 	IPMSG_FILE_DIR       FileType = 0x00000002
@@ -143,7 +134,7 @@ const (
 	IPMSG_FILE_RESFORK   FileType = 0x00000010 // for Mac
 	IPMSG_FILE_CLIPBOARD FileType = 0x00000020 // for Windows Clipboard
 
-	/* file attribute options for fileattach command */
+	/* file attribute options for fileattach cmd */
 
 	IPMSG_FILE_RONLYOPT    FileFlag = 0x00000100
 	IPMSG_FILE_HIDDENOPT   FileFlag = 0x00001000
@@ -151,7 +142,7 @@ const (
 	IPMSG_FILE_ARCHIVEOPT  FileFlag = 0x00004000
 	IPMSG_FILE_SYSTEMOPT   FileFlag = 0x00008000
 
-	/* extend attribute types for fileattach command */
+	/* extend attribute types for fileattach cmd */
 
 	IPMSG_FILE_UID          AttrType = 0x00000001
 	IPMSG_FILE_USERNAME     AttrType = 0x00000002 // uid by string
@@ -206,4 +197,10 @@ const (
 	IPMSG_ALLREVSORTOPT   = uint32(0x00000800)
 	IPMSG_GROUPREVSORTOPT = uint32(0x00001000)
 	IPMSG_SUBREVSORTOPT   = uint32(0x00002000)
+)
+
+//goland:noinspection GoSnakeCaseUsage,GoNameStartsWithPackageName,GoUnusedConst,SpellCheckingInspection
+const (
+	SENDFILE = 0
+	RECVFILE = 1
 )

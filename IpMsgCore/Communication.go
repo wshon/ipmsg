@@ -19,15 +19,15 @@ func PackageHandler(im *ipmsg.IpMsg) {
 		pkg, _ := im.ReadPackage()
 		switch pkg.CommandNo.GetCmd() {
 		case ipmsg.IPMSG_BR_ENTRY:
-			onIpMsgBrEntry(im, pkg)
+			ipmsg.OnIpMsgBrEntry(im, pkg)
 		case ipmsg.IPMSG_BR_EXIT:
-			onIpMsgBrExit(im, pkg)
+			ipmsg.OnIpMsgBrExit(im, pkg)
 		case ipmsg.IPMSG_ANSENTRY:
-			onIpMsgAnsEntry(im, pkg)
+			ipmsg.OnIpMsgAnsEntry(im, pkg)
 		case ipmsg.IPMSG_SENDMSG:
-			onIpMsgSendMsg(im, pkg)
+			ipmsg.OnIpMsgSendMsg(im, pkg)
 		case ipmsg.IPMSG_RECVMSG:
-			onIpMsgRecvMsg(im, pkg)
+			ipmsg.OnIpMsgRecvMsg(im, pkg)
 		case ipmsg.IPMSG_NOOPERATION:
 			// 无操作忽略
 		default:

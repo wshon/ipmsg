@@ -1,34 +1,44 @@
-package IpMsgCore
+package ipmsg
 
 import (
 	"golang.org/x/text/encoding/simplifiedchinese"
-	"ipmsg"
 	"ipmsg/logger"
 )
 
-func onIpMsgBrEntry(im *ipmsg.IpMsg, pkg *ipmsg.Package) {
-	addUser(pkg)
+func NewCmdMap() (cmdMap map[CmdType]func(*IpMsg, *Package)) {
+	cmdMap = make(map[CmdType]func(*IpMsg, *Package))
+	cmdMap[IPMSG_BR_ENTRY] = OnIpMsgBrEntry
+	cmdMap[IPMSG_BR_EXIT] = OnIpMsgBrExit
+	cmdMap[IPMSG_ANSENTRY] = OnIpMsgAnsEntry
+	cmdMap[IPMSG_SENDMSG] = OnIpMsgSendMsg
+	cmdMap[IPMSG_RECVMSG] = OnIpMsgRecvMsg
+	cmdMap[IPMSG_NOOPERATION] = onIpMsgNoOperation
+	return cmdMap
+}
+
+func OnIpMsgBrEntry(im *IpMsg, pkg *Package) {
+	im.UserManager.AddUser(pkg)
 	im.SendEntryAnswer(pkg.SenderAddr)
 }
 
-func onIpMsgBrExit(im *ipmsg.IpMsg, pkg *ipmsg.Package) {
-	delUser(pkg)
+func OnIpMsgBrExit(im *IpMsg, pkg *Package) {
+	im.UserManager.DelUser(pkg)
 }
 
-func onIpMsgAnsEntry(im *ipmsg.IpMsg, pkg *ipmsg.Package) {
-	addUser(pkg)
+func OnIpMsgAnsEntry(im *IpMsg, pkg *Package) {
+	im.UserManager.AddUser(pkg)
 }
 
-func onIpMsgSendMsg(im *ipmsg.IpMsg, pkg *ipmsg.Package) {
+func OnIpMsgSendMsg(im *IpMsg, pkg *Package) {
 	message, _ := simplifiedchinese.GBK.NewDecoder().String(pkg.AdditionalSection)
 	logger.Info("new msg from [%s]# %s\n", pkg.SenderName, message)
-	if ipmsg.IPMSG_SENDCHECKOPT.CheckOpt(pkg.CommandNo) {
+	if pkg.CheckFlag(IPMSG_SENDCHECKOPT) {
 		im.SendMessageReceived(pkg.SenderAddr, pkg.PacketNo)
 	}
-	if ipmsg.IPMSG_SECRETEXOPT.CheckOpt(pkg.CommandNo) {
+	if pkg.CheckFlag(IPMSG_SECRETEXOPT) {
 		im.SendMessageRead(pkg.SenderAddr, pkg.PacketNo)
 	}
-	if ipmsg.IPMSG_FILEATTACHOPT.CheckOpt(pkg.CommandNo) {
+	if pkg.CheckFlag(IPMSG_FILEATTACHOPT) {
 		//char * p = ipMsg + strlen(ipMsg) + 1
 		////printf("filemsg=%s\n",p);
 		//char * fileopt = strtok(p, "\a") //fileopt指向第一个文件属性
@@ -47,9 +57,9 @@ func onIpMsgSendMsg(im *ipmsg.IpMsg, pkg *ipmsg.Package) {
 	}
 }
 
-func onIpMsgRecvMsg(im *ipmsg.IpMsg, pkg *ipmsg.Package) {
+func OnIpMsgRecvMsg(im *IpMsg, pkg *Package) {
 	logger.Info("[%s] have received your ipMsg!\n", pkg.SenderName)
 }
 
-func onIpMsgNoOperation(im *ipmsg.IpMsg, pkg *ipmsg.Package) {
+func onIpMsgNoOperation(im *IpMsg, pkg *Package) {
 }
