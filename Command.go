@@ -17,16 +17,16 @@ func NewCmdMap() (cmdMap map[CmdType]func(*IpMsg, *Package)) {
 }
 
 func OnIpMsgBrEntry(im *IpMsg, pkg *Package) {
-	im.UserManager.AddUser(pkg)
+	im.userManager.AddUser(pkg)
 	im.SendEntryAnswer(pkg.SenderAddr)
 }
 
 func OnIpMsgBrExit(im *IpMsg, pkg *Package) {
-	im.UserManager.DelUser(pkg)
+	im.userManager.DelUser(pkg)
 }
 
 func OnIpMsgAnsEntry(im *IpMsg, pkg *Package) {
-	im.UserManager.AddUser(pkg)
+	im.userManager.AddUser(pkg)
 }
 
 func OnIpMsgSendMsg(im *IpMsg, pkg *Package) {

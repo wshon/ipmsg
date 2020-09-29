@@ -36,6 +36,10 @@ func PackageHandler(im *ipmsg.IpMsg) {
 	}
 }
 
+func getAddrByName(name string) *net.UDPAddr {
+	return nil
+}
+
 //接收文件(参数为接收文件列表中的序号)
 func RecvFile(id int) error {
 	// 是否存在该文件

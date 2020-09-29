@@ -3,6 +3,7 @@ package main
 import (
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"ipmsg"
+	"ipmsg/IpMsgCore"
 	"ipmsg/logger"
 )
 
@@ -34,13 +35,12 @@ func runBase() {
 }
 
 func runIpMsg() {
-	conv := simplifiedchinese.GBK.NewDecoder().String
-
 	im, err := ipmsg.NewIpMsg("Test", "172.18.60.209", ipmsg.IPMSG_DEFAT_PORT)
 	if err != nil {
 		panic(err)
 	}
-	im.BindDecoder(conv)
+	im.BindDecoder(simplifiedchinese.GBK.NewDecoder().String)
+	im.BindUserManager(new(IpMsgCore.UserManager))
 	im.EntryBroadCast()
 	im.Run()
 }

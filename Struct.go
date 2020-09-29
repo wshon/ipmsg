@@ -3,12 +3,15 @@ package ipmsg
 import "net"
 
 type IUserManager interface {
-	AddUser(pkg *Package) *IUserManager
-
-	DelUser(pkg *Package) *IUserManager
-
+	AddUser(pkg *Package) interface{ IUserInfo }
+	DelUser(pkg *Package)
 	//根据用户名返回IP地址
 	GetAddrByName(name string) *net.UDPAddr
+}
+
+type IUserInfo interface {
+	GetName()
+	GetAddr() *net.UDPAddr
 }
 
 type IFileManager interface {

@@ -8,21 +8,34 @@ import (
 
 type IpMsg struct {
 	*Base
-	UserManager    IUserManager
-	packageHandler func(*IpMsg)
-	cmdMap         map[CmdType]func(*IpMsg, *Package)
+
+	cmdMap      map[CmdType]func(*IpMsg, *Package)
+	userManager IUserManager
 }
 
 func NewIpMsg(user string, host string, port int) (im *IpMsg, err error) {
 	ipMsgBase, err := NewIpMsgBase(user, host, port)
+	ipMsgBase.BindHandler(defaultHandler)
 	if err != nil {
 		return nil, err
 	}
 	im = &IpMsg{
-		Base:   ipMsgBase,
-		cmdMap: NewCmdMap(),
+		Base:        ipMsgBase,
+		cmdMap:      NewCmdMap(),
+		userManager: &UserManager{},
 	}
 	return im, nil
+}
+
+func defaultHandler(im *IpMsg) {
+	for {
+		pkg, _ := im.ReadPackage()
+		if cmd, ok := im.cmdMap[pkg.CommandNo.GetCmd()]; ok {
+			cmd(im, pkg)
+		} else {
+			logger.Warning("no packageHandler for cmd [%s]", pkg.CommandNo.GetCmd())
+		}
+	}
 }
 
 func (im *IpMsg) BindCommandMap(cmdMap map[CmdType]func(*IpMsg, *Package)) {
@@ -33,27 +46,8 @@ func (im *IpMsg) BindCommand(cmdNo CmdType, cmd func(*IpMsg, *Package)) {
 	im.cmdMap[cmdNo] = cmd
 }
 
-func (im *IpMsg) BindHandler(handler func(*IpMsg)) {
-	im.packageHandler = handler
-}
-
-func (im *IpMsg) Run() {
-	if im.packageHandler != nil {
-		im.packageHandler(im)
-	} else {
-		im.defaultHandler()
-	}
-}
-
-func (im *IpMsg) defaultHandler() {
-	for {
-		pkg, _ := im.ReadPackage()
-		if cmd, ok := im.cmdMap[pkg.CommandNo.GetCmd()]; ok {
-			cmd(im, pkg)
-		} else {
-			logger.Warning("no packageHandler for cmd [%s]", pkg.CommandNo.GetCmd())
-		}
-	}
+func (im *IpMsg) BindUserManager(userManager IUserManager) {
+	im.userManager = userManager
 }
 
 //上线广播

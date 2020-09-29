@@ -4,29 +4,36 @@ import (
 	"ipmsg"
 	"ipmsg/logger"
 	"net"
+	"strings"
 )
 
-//根据用户名返回IP地址
-func getAddrByName(name string) *net.UDPAddr {
-	return nil
+type UserManager struct {
 }
 
-func addUser(pkg *ipmsg.Package) (user *ipmsg.UserInfo) {
-	user = &ipmsg.UserInfo{
-		Name: pkg.SenderName,
-		Host: pkg.SenderHost,
+func (u UserManager) AddUser(pkg *ipmsg.Package) interface{ ipmsg.IUserInfo } {
+	user := &ipmsg.UserInfo{
 		Addr: pkg.SenderAddr,
+		Host: pkg.SenderHost,
 		Info: pkg.AdditionalSection,
 	}
+	idInfo := strings.Split(pkg.SenderName, "-")
+	if len(idInfo) > 1 {
+		user.Id = idInfo[1]
+	}
+	user.Name = idInfo[0]
 	logger.Debug("add user [%+v]", user)
 	return user
 }
 
-func delUser(pkg *ipmsg.Package) {
+func (u UserManager) DelUser(pkg *ipmsg.Package) {
 	user := &ipmsg.UserInfo{
 		Name: pkg.SenderName,
 		Host: pkg.SenderHost,
 		Addr: pkg.SenderAddr,
 	}
 	logger.Debug("del user [%s]", user)
+}
+
+func (u UserManager) GetAddrByName(name string) *net.UDPAddr {
+	return nil
 }

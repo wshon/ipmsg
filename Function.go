@@ -6,37 +6,39 @@ import (
 	"os"
 )
 
+type UserManager struct {
+}
+
+func (u UserManager) AddUser(pkg *Package) interface{ IUserInfo } {
+	user := &UserInfo{}
+	logger.Error("no implement [IUserManager]")
+	return user
+}
+
+func (u UserManager) DelUser(pkg *Package) {
+	logger.Error("no implement [IUserManager]")
+}
+
+func (u UserManager) GetAddrByName(name string) *net.UDPAddr {
+	logger.Error("no implement [IUserManager]")
+	return nil
+}
+
 type UserInfo struct {
+	Id   string
 	Addr *net.UDPAddr
 	Name string
 	Host string
 	Info string
 }
 
-func (u UserInfo) AddUser(pkg *Package) *IUserManager {
-	user := &UserInfo{
-		Name: pkg.SenderName,
-		Host: pkg.SenderHost,
-		Addr: pkg.SenderAddr,
-		Info: pkg.AdditionalSection,
-	}
-	logger.Debug("add user [%+v]", user)
-	return user
+func (u UserInfo) GetName() {
+	logger.Error("no implement [IUserInfo]")
 }
 
-func (u UserInfo) DelUser(pkg *Package) *IUserManager {
-	panic("implement me")
-}
-
-func (u UserInfo) GetAddrByName(name string) *net.UDPAddr {
-	panic("implement me")
-}
-
-func (u UserInfo) AddUser(pkg *Package) {
-}
-
-func (u UserInfo) DelUser(pkg *Package) {
-	panic("implement me")
+func (u UserInfo) GetAddr() *net.UDPAddr {
+	logger.Error("no implement [IUserInfo]")
+	return nil
 }
 
 type FileInfo struct {
