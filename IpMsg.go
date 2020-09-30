@@ -9,13 +9,13 @@ import (
 type IpMsg struct {
 	*Base
 
-	cmdMap      map[CmdType]func(*IpMsg, *Package)
-	userManager IUserManager
+	packageHandler func(*IpMsg)
+	cmdMap         map[CmdType]func(*IpMsg, *Package)
+	userManager    IUserManager
 }
 
 func NewIpMsg(user string, host string, port int) (im *IpMsg, err error) {
 	ipMsgBase, err := NewIpMsgBase(user, host, port)
-	ipMsgBase.BindHandler(defaultHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -25,6 +25,19 @@ func NewIpMsg(user string, host string, port int) (im *IpMsg, err error) {
 		userManager: &UserManager{},
 	}
 	return im, nil
+}
+
+func (im *IpMsg) BindHandler(handler func(*IpMsg)) {
+	im.packageHandler = handler
+	im.cmdMap = nil
+}
+
+func (im *IpMsg) Run() {
+	if im.packageHandler == nil {
+		im.packageHandler = defaultHandler
+	}
+	im.userManager.Init()
+	im.packageHandler(im)
 }
 
 func defaultHandler(im *IpMsg) {
@@ -39,10 +52,16 @@ func defaultHandler(im *IpMsg) {
 }
 
 func (im *IpMsg) BindCommandMap(cmdMap map[CmdType]func(*IpMsg, *Package)) {
+	if &im.packageHandler != nil {
+		panic("packageHandler has been modified")
+	}
 	im.cmdMap = cmdMap
 }
 
 func (im *IpMsg) BindCommand(cmdNo CmdType, cmd func(*IpMsg, *Package)) {
+	if &im.packageHandler != nil {
+		panic("packageHandler has been modified")
+	}
 	im.cmdMap[cmdNo] = cmd
 }
 

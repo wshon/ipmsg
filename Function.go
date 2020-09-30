@@ -9,27 +9,32 @@ import (
 type UserManager struct {
 }
 
-func (u UserManager) AddUser(pkg *Package) interface{ IUserInfo } {
+func (u *UserManager) Init() {
+	logger.Error("no implement [IUserManager]")
+}
+
+func (u *UserManager) AddUser(pkg *Package) interface{ IUserInfo } {
 	user := &UserInfo{}
 	logger.Error("no implement [IUserManager]")
 	return user
 }
 
-func (u UserManager) DelUser(pkg *Package) {
+func (u *UserManager) DelUser(pkg *Package) {
 	logger.Error("no implement [IUserManager]")
 }
 
-func (u UserManager) GetAddrByName(name string) *net.UDPAddr {
+func (u *UserManager) GetAddrByName(name string) *net.UDPAddr {
 	logger.Error("no implement [IUserManager]")
 	return nil
 }
 
 type UserInfo struct {
-	Id   string
-	Addr *net.UDPAddr
-	Name string
-	Host string
-	Info string
+	Addr      *net.UDPAddr
+	IdCode    string
+	GroupName string
+	NickName  string
+	UserName  string
+	HostName  string
 }
 
 func (u UserInfo) GetName() {

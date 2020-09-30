@@ -14,13 +14,11 @@ type Base struct {
 	SenderPort    int
 	BroadCastAddr *net.UDPAddr
 
-	packageHandler Handler
+	packageHandler func(*Base)
 	messageDecoder func(s string) (string, error)
 	tcpNet         *net.TCPListener
 	udpNet         *net.UDPConn
 }
-
-type Handler func(interface{ Base })
 
 func NewIpMsgBase(user string, host string, port int) (im *Base, err error) {
 	im = &Base{
@@ -45,11 +43,11 @@ func NewIpMsgBase(user string, host string, port int) (im *Base, err error) {
 	return im, nil
 }
 
-func (im *IpMsg) BindDecoder(decoder func(s string) (string, error)) {
+func (im *Base) BindDecoder(decoder func(s string) (string, error)) {
 	im.messageDecoder = decoder
 }
 
-func (im *Base) BindHandler(handler Handler) {
+func (im *Base) BindHandler(handler func(*Base)) {
 	im.packageHandler = handler
 }
 

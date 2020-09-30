@@ -3,6 +3,7 @@ package ipmsg
 import "net"
 
 type IUserManager interface {
+	Init()
 	AddUser(pkg *Package) interface{ IUserInfo }
 	DelUser(pkg *Package)
 	//根据用户名返回IP地址
@@ -15,7 +16,7 @@ type IUserInfo interface {
 }
 
 type IFileManager interface {
-	getAddrByName(name string) *IFileManager
+	GetAddrByName(name string) *IFileManager
 	//向链表(接收或发送链表)中添加一个文件
 	//flag : SENDFILE(发送链表) RECVFILE(接收链表)
 	addFile(temp *IFileManager, flag int)

@@ -35,7 +35,7 @@ func runBase() {
 }
 
 func runIpMsg() {
-	im, err := ipmsg.NewIpMsg("Test", "172.18.60.209", ipmsg.IPMSG_DEFAT_PORT)
+	im, err := ipmsg.NewIpMsg("Test", "0.0.0.0", ipmsg.IPMSG_DEFAT_PORT)
 	if err != nil {
 		panic(err)
 	}

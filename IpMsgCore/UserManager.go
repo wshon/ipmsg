@@ -8,32 +8,48 @@ import (
 )
 
 type UserManager struct {
+	userList map[string]*ipmsg.UserInfo
 }
 
-func (u UserManager) AddUser(pkg *ipmsg.Package) interface{ ipmsg.IUserInfo } {
+func (u *UserManager) Init() {
+	u.userList = make(map[string]*ipmsg.UserInfo)
+}
+
+func (u *UserManager) AddUser(pkg ipmsg.Package) interface{ ipmsg.IUserInfo } {
 	user := &ipmsg.UserInfo{
-		Addr: pkg.SenderAddr,
-		Host: pkg.SenderHost,
-		Info: pkg.AdditionalSection,
+		Addr:     pkg.SenderAddr,
+		HostName: pkg.SenderHost,
 	}
-	idInfo := strings.Split(pkg.SenderName, "-")
-	if len(idInfo) > 1 {
-		user.Id = idInfo[1]
+	senderName := strings.Split(pkg.SenderName, "<")
+	if len(senderName) > 1 {
+		user.IdCode = senderName[1]
 	}
-	user.Name = idInfo[0]
+	user.UserName = senderName[0]
+	extraInfo := strings.Split(pkg.AdditionalSection, "\x00")
+	if len(extraInfo) > 2 {
+		user.IdCode = extraInfo[2]
+	}
+	if len(extraInfo) > 1 {
+		user.GroupName = extraInfo[1]
+	}
+	user.NickName = extraInfo[0]
+	if user.IdCode == "" {
+		user.IdCode = user.UserName
+	}
+	u.userList[user.IdCode] = user
 	logger.Debug("add user [%+v]", user)
 	return user
 }
 
-func (u UserManager) DelUser(pkg *ipmsg.Package) {
+func (u *UserManager) DelUser(pkg *ipmsg.Package) {
 	user := &ipmsg.UserInfo{
-		Name: pkg.SenderName,
-		Host: pkg.SenderHost,
-		Addr: pkg.SenderAddr,
+		NickName: pkg.SenderName,
+		HostName: pkg.SenderHost,
+		Addr:     pkg.SenderAddr,
 	}
 	logger.Debug("del user [%s]", user)
 }
 
-func (u UserManager) GetAddrByName(name string) *net.UDPAddr {
+func (u *UserManager) GetAddrByName(name string) *net.UDPAddr {
 	return nil
 }
