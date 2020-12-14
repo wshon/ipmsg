@@ -45,6 +45,22 @@ func runIpMsg() {
 	im.Run()
 }
 
+func listenHandler(im *ipmsg.IpMsg) {
+	for {
+		pkg, _ := im.ReadPackage()
+		logger.Warning("no packageHandler for cmd [%s]", pkg.CommandNo.GetCmd())
+	}
+}
+func listenIpMsg() {
+	im, err := ipmsg.NewIpMsg("Test", "0.0.0.0", ipmsg.IPMSG_DEFAT_PORT)
+	if err != nil {
+		panic(err)
+	}
+	im.BindDecoder(simplifiedchinese.GBK.NewDecoder().String)
+	im.BindHandler(listenHandler)
+	im.Run()
+}
+
 func main() {
-	runIpMsg()
+	listenIpMsg()
 }

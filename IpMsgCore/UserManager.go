@@ -15,7 +15,7 @@ func (u *UserManager) Init() {
 	u.userList = make(map[string]*ipmsg.UserInfo)
 }
 
-func (u *UserManager) AddUser(pkg ipmsg.Package) interface{ ipmsg.IUserInfo } {
+func (u *UserManager) AddUser(pkg *ipmsg.Package) interface{ ipmsg.IUserInfo } {
 	user := &ipmsg.UserInfo{
 		Addr:     pkg.SenderAddr,
 		HostName: pkg.SenderHost,
