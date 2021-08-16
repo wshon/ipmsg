@@ -7,60 +7,31 @@ import (
 	"ipmsg/logger"
 )
 
-func PackageHandler(im *ipmsg.Base) {
-	for {
-		pkg, _ := im.ReadPackage()
-		switch pkg.CommandNo.GetCmd() {
-		case ipmsg.IPMSG_BR_ENTRY:
-		case ipmsg.IPMSG_BR_EXIT:
-		case ipmsg.IPMSG_ANSENTRY:
-		case ipmsg.IPMSG_SENDMSG:
-		case ipmsg.IPMSG_RECVMSG:
-		case ipmsg.IPMSG_NOOPERATION:
-			// 无操作忽略
-		default:
-			logger.Info("recv unknown from [%s]#\n%s\n%X", pkg.SenderName, pkg, pkg)
-		}
-	}
-}
-func runBase() {
-	im, err := ipmsg.NewIpMsgBase("Test", "172.18.60.209", ipmsg.IPMSG_DEFAT_PORT)
-	if err != nil {
-		panic(err)
-	}
-	pkg := im.NewPackage(ipmsg.IPMSG_BR_ENTRY, im.SenderName)
-	_ = im.SendPackage(im.BroadCastAddr, pkg)
-	im.BindHandler(PackageHandler)
-	im.Run()
+//var host = "192.168.182.1"
+var host = "192.168.182.1"
+
+func OnMsgIn(im *ipmsg.IpMsg, pkg *ipmsg.Package) {
+	im.SendMessage(pkg.SenderAddr, pkg.AdditionalSection)
 }
 
-func runIpMsg() {
-	im, err := ipmsg.NewIpMsg("Test", "0.0.0.0", ipmsg.IPMSG_DEFAT_PORT)
+// runIpMsg 运行IPMSG
+func runIpMsg() *ipmsg.IpMsg {
+	im, err := ipmsg.NewIpMsg("Test", host, ipmsg.IPMSG_DEFAT_PORT)
 	if err != nil {
 		panic(err)
 	}
 	im.BindDecoder(simplifiedchinese.GBK.NewDecoder().String)
 	im.BindUserManager(new(IpMsgCore.UserManager))
-	im.EntryBroadCast()
-	im.Run()
-}
+	im.SetEncoding("utf-8")
 
-func listenHandler(im *ipmsg.IpMsg) {
-	for {
-		pkg, _ := im.ReadPackage()
-		logger.Warning("no packageHandler for cmd [%s]", pkg.CommandNo.GetCmd())
-	}
-}
-func listenIpMsg() {
-	im, err := ipmsg.NewIpMsg("Test", "0.0.0.0", ipmsg.IPMSG_DEFAT_PORT)
-	if err != nil {
-		panic(err)
-	}
-	im.BindDecoder(simplifiedchinese.GBK.NewDecoder().String)
-	im.BindHandler(listenHandler)
-	im.Run()
+	im.BindEvent(ipmsg.IPMSG_SENDMSG, OnMsgIn)
+
+	im.EntryBroadCast()
+	defer im.Run()
+	return im
 }
 
 func main() {
-	listenIpMsg()
+	_ = runIpMsg()
+	logger.Warning("no packageHandler for cmd")
 }

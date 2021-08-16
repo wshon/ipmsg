@@ -8,7 +8,7 @@ import (
 
 //创建 TCP Server 套接字
 func createTcpServer(host string, port int) (*net.TCPListener, error) {
-	logger.Debug("create tcpNet listener")
+	logger.Debug("create tcpNet listener at " + host + ":" + strconv.Itoa(port))
 	udpAddr, err := net.ResolveTCPAddr("tcp", host+":"+strconv.Itoa(port))
 	if err != nil {
 		logger.Fatal("%s", err)
@@ -25,7 +25,7 @@ func createTcpServer(host string, port int) (*net.TCPListener, error) {
 
 //创建 UDP Server 套接字
 func createUdpServer(host string, port int) (*net.UDPConn, error) {
-	logger.Debug("create udpNet listener")
+	logger.Debug("create udpNet listener at " + host + ":" + strconv.Itoa(port))
 	udpAddr, err := net.ResolveUDPAddr("udp", host+":"+strconv.Itoa(port))
 	if err != nil {
 		logger.Fatal("%s", err)

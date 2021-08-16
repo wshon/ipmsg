@@ -4,13 +4,16 @@ import (
 	"ipmsg/logger"
 	"net"
 	"strconv"
+	"strings"
 )
 
 type IpMsg struct {
 	*Base
 
+	encoding       string
 	packageHandler func(*IpMsg)
 	cmdMap         map[CmdType]func(*IpMsg, *Package)
+	eventMap       map[CmdType]func(*IpMsg, *Package)
 	userManager    IUserManager
 }
 
@@ -22,16 +25,19 @@ func NewIpMsg(user string, host string, port int) (im *IpMsg, err error) {
 	im = &IpMsg{
 		Base:        ipMsgBase,
 		cmdMap:      NewCmdMap(),
+		eventMap:    make(map[CmdType]func(*IpMsg, *Package)),
 		userManager: &UserManager{},
 	}
 	return im, nil
 }
 
+// 绑定报文处理器
 func (im *IpMsg) BindHandler(handler func(*IpMsg)) {
 	im.packageHandler = handler
 	im.cmdMap = nil
 }
 
+// 启动服务
 func (im *IpMsg) Run() {
 	if im.packageHandler == nil {
 		im.packageHandler = defaultHandler
@@ -40,6 +46,7 @@ func (im *IpMsg) Run() {
 	im.packageHandler(im)
 }
 
+// 内置报文处理器
 func defaultHandler(im *IpMsg) {
 	for {
 		pkg, _ := im.ReadPackage()
@@ -48,16 +55,13 @@ func defaultHandler(im *IpMsg) {
 		} else {
 			logger.Warning("no packageHandler for cmd [%s]", pkg.CommandNo.GetCmd())
 		}
+		if event, ok := im.eventMap[pkg.CommandNo.GetCmd()]; ok {
+			event(im, pkg)
+		}
 	}
 }
 
-func (im *IpMsg) BindCommandMap(cmdMap map[CmdType]func(*IpMsg, *Package)) {
-	if &im.packageHandler != nil {
-		panic("packageHandler has been modified")
-	}
-	im.cmdMap = cmdMap
-}
-
+// 绑定报文处理函数
 func (im *IpMsg) BindCommand(cmdNo CmdType, cmd func(*IpMsg, *Package)) {
 	if &im.packageHandler != nil {
 		panic("packageHandler has been modified")
@@ -65,17 +69,36 @@ func (im *IpMsg) BindCommand(cmdNo CmdType, cmd func(*IpMsg, *Package)) {
 	im.cmdMap[cmdNo] = cmd
 }
 
+// 绑定报文处理函数组
+func (im *IpMsg) BindCommandMap(cmdMap map[CmdType]func(*IpMsg, *Package)) {
+	if &im.packageHandler != nil {
+		panic("packageHandler has been modified")
+	}
+	im.cmdMap = cmdMap
+}
+
+// 绑定用户管理器
 func (im *IpMsg) BindUserManager(userManager IUserManager) {
 	im.userManager = userManager
 }
 
-//上线广播
+// 绑定事件处理器
+func (im *IpMsg) BindEvent(cmdNo CmdType, cmd func(*IpMsg, *Package)) {
+	im.eventMap[cmdNo] = cmd
+}
+
+// 设置报文编码
+func (im *IpMsg) SetEncoding(encoding string) {
+	im.encoding = strings.ToLower(encoding)
+}
+
+// 发送上线广播
 func (im *IpMsg) EntryBroadCast() {
 	pkg := im.NewPackage(IPMSG_BR_ENTRY, im.SenderName)
 	_ = im.SendPackage(im.BroadCastAddr, pkg)
 }
 
-//下线广播
+// 发送下线广播
 func (im *IpMsg) ExitBroadCast() {
 	pkg := im.NewPackage(IPMSG_BR_EXIT, im.SenderName)
 	_ = im.SendPackage(im.BroadCastAddr, pkg)
@@ -83,6 +106,12 @@ func (im *IpMsg) ExitBroadCast() {
 
 func (im *IpMsg) SendEntryAnswer(addr *net.UDPAddr) {
 	pkg := im.NewPackage(IPMSG_ANSENTRY, im.SenderName)
+	_ = im.SendPackage(addr, pkg)
+}
+
+func (im *IpMsg) SendMessage(addr *net.UDPAddr, text string) {
+	pkg := im.NewPackage(IPMSG_SENDMSG, text)
+	pkg.SetFlag(IPMSG_SENDCHECKOPT)
 	_ = im.SendPackage(addr, pkg)
 }
 

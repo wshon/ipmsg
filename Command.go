@@ -30,7 +30,12 @@ func OnIpMsgAnsEntry(im *IpMsg, pkg *Package) {
 }
 
 func OnIpMsgSendMsg(im *IpMsg, pkg *Package) {
-	message, _ := simplifiedchinese.GBK.NewDecoder().String(pkg.AdditionalSection)
+	var message string
+	if im.encoding == "gbk" {
+		message, _ = simplifiedchinese.GBK.NewDecoder().String(pkg.AdditionalSection)
+	} else {
+		message = pkg.AdditionalSection
+	}
 	logger.Info("new msg from [%s]# %s\n", pkg.SenderName, message)
 	if pkg.CheckFlag(IPMSG_SENDCHECKOPT) {
 		im.SendMessageReceived(pkg.SenderAddr, pkg.PacketNo)

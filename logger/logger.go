@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	LevelDebug = 1 << iota
-	LevelTrace
+	LevelTrace = 1 << iota
+	LevelDebug
 	LevelInfo
 	LevelWarning
 	LevelError

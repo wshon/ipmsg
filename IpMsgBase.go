@@ -67,10 +67,10 @@ func (im *Base) NewPackage(CommandNo CmdType, AdditionalSection string) *Package
 }
 
 func (im *Base) SendPackage(addr *net.UDPAddr, pkg *Package) error {
-	logger.Trace("send pkg [%s] to [%s]", pkg.CommandNo.GetCmd(), addr)
+	logger.Debug("send pkg [%s] to [%s]", pkg.CommandNo.GetCmd(), addr)
 	pkg.Buf = pkg.Marshal()
-	logger.Debug("send new pkg %+v", pkg)
-	logger.Debug("send pkg ext_data {%s}", strings.Replace(pkg.AdditionalSection, "\n", "\\n", -1))
+	logger.Trace("send new pkg %+v", pkg)
+	logger.Trace("send pkg ext_data {%s}", strings.Replace(pkg.AdditionalSection, "\n", "\\n", -1))
 	_, err := im.udpNet.WriteToUDP(pkg.Buf, addr)
 	return err
 }
@@ -79,12 +79,12 @@ func (im *Base) ReadPackage() (*Package, error) {
 	buf := make([]byte, 512)
 	n, addr, _ := im.udpNet.ReadFromUDP(buf)
 	pkg, _ := UnMarshal(buf[:n])
-	logger.Trace("recv pkg [%s] from [%s]", pkg.CommandNo.GetCmd(), addr)
+	logger.Debug("recv pkg [%s] from [%s]", pkg.CommandNo.GetCmd(), addr)
 	pkg.SenderAddr = addr
-	logger.Debug("recv new pkg %+v", pkg)
+	logger.Trace("recv new pkg %+v", pkg)
 	if im.messageDecoder != nil {
 		pkg.AdditionalSection, _ = im.messageDecoder(pkg.AdditionalSection)
 	}
-	logger.Debug("recv pkg ext_data {%s}", strings.Replace(pkg.AdditionalSection, "\n", "\\n", -1))
+	logger.Trace("recv pkg ext_data {%s}", strings.Replace(pkg.AdditionalSection, "\n", "\\n", -1))
 	return pkg, nil
 }

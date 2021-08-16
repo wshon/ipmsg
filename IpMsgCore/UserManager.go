@@ -36,7 +36,7 @@ func (u *UserManager) AddUser(pkg *ipmsg.Package) interface{ ipmsg.IUserInfo } {
 	if user.IdCode == "" {
 		user.IdCode = user.UserName
 	}
-	u.userList[user.IdCode] = user
+	u.userList[user.Addr.String()] = user
 	logger.Debug("add user [%+v]", user)
 	return user
 }
@@ -47,6 +47,7 @@ func (u *UserManager) DelUser(pkg *ipmsg.Package) {
 		HostName: pkg.SenderHost,
 		Addr:     pkg.SenderAddr,
 	}
+	delete(u.userList, pkg.SenderAddr.String())
 	logger.Debug("del user [%s]", user)
 }
 
