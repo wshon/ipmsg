@@ -7,8 +7,7 @@ import (
 	"ipmsg/logger"
 )
 
-//var host = "192.168.182.1"
-var host = "192.168.182.1"
+var host = "[fe80::b84f:3418:b9f3:e7ba]"
 
 func OnMsgIn(im *ipmsg.IpMsg, pkg *ipmsg.Package) {
 	im.SendMessage(pkg.SenderAddr, pkg.AdditionalSection)

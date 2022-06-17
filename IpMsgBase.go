@@ -9,10 +9,11 @@ import (
 )
 
 type Base struct {
-	SenderName    string
-	SenderHost    string
-	SenderPort    int
-	BroadCastAddr *net.UDPAddr
+	SenderName      string
+	SenderHost      string
+	SenderPort      int
+	BroadCastAddr   *net.UDPAddr
+	BroadCastV6Addr *net.UDPAddr
 
 	packageHandler func(*Base)
 	messageDecoder func(s string) (string, error)
@@ -27,6 +28,10 @@ func NewIpMsgBase(user string, host string, port int) (im *Base, err error) {
 		SenderPort: port,
 		BroadCastAddr: &net.UDPAddr{
 			IP:   net.IPv4bcast,
+			Port: port,
+		},
+		BroadCastV6Addr: &net.UDPAddr{
+			IP:   net.IPv6linklocalallrouters,
 			Port: port,
 		},
 	}

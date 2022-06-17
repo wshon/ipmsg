@@ -96,12 +96,14 @@ func (im *IpMsg) SetEncoding(encoding string) {
 func (im *IpMsg) EntryBroadCast() {
 	pkg := im.NewPackage(IPMSG_BR_ENTRY, im.SenderName)
 	_ = im.SendPackage(im.BroadCastAddr, pkg)
+	_ = im.SendPackage(im.BroadCastV6Addr, pkg)
 }
 
 // 发送下线广播
 func (im *IpMsg) ExitBroadCast() {
 	pkg := im.NewPackage(IPMSG_BR_EXIT, im.SenderName)
 	_ = im.SendPackage(im.BroadCastAddr, pkg)
+	_ = im.SendPackage(im.BroadCastV6Addr, pkg)
 }
 
 func (im *IpMsg) SendEntryAnswer(addr *net.UDPAddr) {
